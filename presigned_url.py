@@ -32,7 +32,7 @@ class AWSTranscribePresignedURL:
     def get_request_url(
         self,
         sample_rate:int,
-        language_code: str = "en-US",
+        language_code: str = "",
         media_encoding: str = "pcm",
         vocabulary_name: str = "",
         session_id: str = "",
@@ -48,6 +48,7 @@ class AWSTranscribePresignedURL:
         pii_entity_types: str = "",
         language_model_name: str = "",
         identify_language: bool = False,
+        identify_multiple_languages: bool = False,
         language_options: str = "",
         preferred_language: str = "",
         vocabulary_names: str = "",
@@ -82,6 +83,7 @@ class AWSTranscribePresignedURL:
             pii_entity_types,
             language_model_name,
             identify_language,
+            identify_multiple_languages,
             language_options,
             preferred_language,
             vocabulary_names,
@@ -114,6 +116,7 @@ class AWSTranscribePresignedURL:
         pii_entity_types: str,
         language_model_name: str,
         identify_language: bool,
+        identify_multiple_languages: bool,
         language_options: str,
         preferred_language: str,
         vocabulary_names: str,
@@ -136,10 +139,12 @@ class AWSTranscribePresignedURL:
             self.canonical_querystring += "&enable-partial-results-stabilization=true"
         if identify_language:
             self.canonical_querystring += "&identify-language=true"
+        if identify_multiple_languages:
+            self.canonical_querystring += "&identify-multiple-languages=true"
         if language_model_name:
             self.canonical_querystring += "&language-model-name=" + language_model_name
         if language_options:
-            self.canonical_querystring += "&language-options=" + language_options
+            self.canonical_querystring += "&language-options=" + urllib.parse.quote(language_options, safe='')
         if language_code:
             self.canonical_querystring += "&language-code=" + language_code
         if media_encoding:
@@ -149,7 +154,7 @@ class AWSTranscribePresignedURL:
         if partial_results_stability:
             self.canonical_querystring += "&partial-results-stability=" + partial_results_stability
         if pii_entity_types:
-            self.canonical_querystring += "&pii-entity-types=" + pii_entity_types
+            self.canonical_querystring += "&pii-entity-types=" +  urllib.parse.quote(pii_entity_types, safe='')
         if preferred_language:
             self.canonical_querystring += "&preferred-language=" + preferred_language
         if sample_rate:
@@ -163,16 +168,17 @@ class AWSTranscribePresignedURL:
         if vocabulary_filter_name:
             self.canonical_querystring += "&vocabulary-filter-name=" + vocabulary_filter_name
         if vocabulary_names:
-            self.canonical_querystring += "&vocabulary-names=" + vocabulary_names
+            self.canonical_querystring += "&vocabulary-names=" + urllib.parse.quote(vocabulary_names, safe='')
         if vocabulary_name:
             self.canonical_querystring += "&vocabulary-name=" + vocabulary_name
         if vocabulary_filter_names:
-            self.canonical_querystring += "&vocabulary-filter-names=" + vocabulary_filter_names
+            self.canonical_querystring += "&vocabulary-filter-names=" + urllib.parse.quote(vocabulary_filter_names, safe='')
 
     def create_payload_hash(self):
         self.payload_hash = self.to_hex(self.hash(""))
         
     def create_canonical_request(self):
+        print(self.canonical_querystring)
         self.canonical_request = f"{self.method}\n{self.canonical_uri}\n{self.canonical_querystring}\n{self.canonical_headers}\n{self.signed_headers}\n{self.payload_hash}"
         
     def create_string_to_sign(self):
